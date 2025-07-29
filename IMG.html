@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gemini AI Text to Image Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --gradient: linear-gradient(135deg, #4285f4, #34a853, #ea4335);
+        }
+        
+        body {
+            background-color: var(--dark-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+        
+        .chat-container {
+            height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.5s ease forwards;
+            opacity: 0;
+        }
+        
+        .user-message {
+            background-color: var(--primary-color);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            background-color: #2d2d2d;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-content {
+            font-size: 1.1rem;
+        }
+        
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 100px;
+            background-color: var(--dark-color);
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-control {
+            background-color: #303134;
+            border: 1px solid #5f6368;
+            color: white;
+            border-radius: 24px;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            background-color: #303134;
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(66, 133, 244, 0.25);
+        }
+        
+        .btn-send {
+            background: var(--gradient);
+            border: none;
+            border-radius: 24px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-send:active {
+            transform: translateY(0);
+        }
+        
+        .btn-send::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+        
+        .btn-send:hover::after {
+            opacity: 1;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #2d2d2d;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            width: fit-content;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--light-color);
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.5s;
+        }
+        
+        .welcome-message h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .welcome-message p {
+            font-size: 1.2rem;
+            color: #bdc1c6;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+        
+        .suggestion-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .suggestion-card {
+            background-color: #303134;
+            border-radius: 12px;
+            padding: 15px;
+            width: calc(50% - 30px);
+            min-width: 250px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .suggestion-card:hover {
+            background-color: #3c4043;
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+        
+        .suggestion-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-card p {
+            color: #bdc1c6;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            padding: 25px;
+            text-align: center;
+            color: #bdc1c6;
+            font-size: 0.9rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .message {
+                max-width: 90%;
+            }
+            
+            .suggestion-card {
+                width: 100%;
+            }
+            
+            .chat-container {
+                padding: 10px;
+            }
+        }
+        
+        /* Floating animation for logo */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        /* Pulse animation for buttons */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Creator credit text gradient */
+        .gradient-text {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 0.8rem;
+        }
+
+        .creator-credit {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        /* Glow effect */
+        .glow {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .glow:hover {
+            box-shadow: 0 0 15px rgba(66, 133, 244, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot me-2"></i>Gemini AI
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome-message">
+                <div class="logo">
+                    <i class="fas fa-robot logo-icon floating"></i>
+                </div>
+                <h1>Welcome to Gemini AI Text to Image </h1>
+                <p>Enter the Prompt to generate an image you want. I'm here to help!</p>
+                <p class="creator-credit">Created by <span class="gradient-text">Syed Waleed Hussain</span></p>
+            </div>
+        </div>
+      <div class="input-container">
+  <div class="container">
+    <form action="/IMG" method="post">
+      <div class="input-group">
+        <input type="text" class="form-control" name="userprompt" id="userInput"  placeholder="Ask me anything..." autocomplete="off">
+        <button class="btn btn-send ms-2 pulse" type="submit">
+          <i class="fas fa-paper-plane me-2"></i>Send
+        </button>
+      </div>
+    </form>
+
+    {% if prompt %}
+    <div class="mt-4">
+      <strong>Generated Image:{{ prompt }}</strong>
+      <img src="{{ image_url }}" alt="Generated Image">
+    {% else %}
+        <p>No image generated.</p>
+    </div>
+    {% endif %}
+
+    <div class="footer mt-3">
+      <p>Gemini AI may display inaccurate information. Please verify critical information.</p>
+      <p class="creator-credit">Created by <span class="gradient-text">Syed Waleed Hussain</span></p>
+    </div>
+  </div>
+</div>
+
+    </script>
+</body>
+</html>
